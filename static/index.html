@@ -5,7 +5,7 @@
     <title>Stundenplan</title>
     <link href="https://pipeman.org/std-style.css" rel="stylesheet" type="text/css">
 </head>
-<body>
+<body style="background: url('someone.gif')">
 <h1 style="color: forestgreen; font-family: Arial, serif">WLS-Vertretungsplan</h1>
 <input id="button-today" class="text-input button" type="button" value="Heute" onclick="getPlanToday()">
 <br>
@@ -34,7 +34,13 @@
 
     window.onload = () => {
         setHighlight(true, true);
-        getPlanToday();
+        if (isWeekend()) getPlanTomorrow();
+        else getPlanToday();
+    }
+
+    function isWeekend() {
+        const date = new Date();
+        return date.getDay() === 0 || date.getDay() === 6;
     }
 
     function getPlanToday() {

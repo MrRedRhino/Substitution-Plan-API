@@ -12,7 +12,8 @@ public class Config extends AbstractConfig {
     public final String ilUser = this.get("its-learning-user", "Your name");
     public final String ilTodayPlanId = this.get("its-learning-today-plan-id", "");
     public final String ilTomorrowPlanId = this.get("its-learning-tomorrow-plan-id", "");
-    public final int planCacheLifetime = this.get("plan-cache-lifetime", 300);
+    public final int planFetchInterval = this.get("plan-fetch-interval", 300);
+    public final Path planSaveDir = this.get("plan-save-directory", Path.of(""));
 
     public Config(String file) {
         super(file);

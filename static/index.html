@@ -5,15 +5,6 @@
     <title>Stundenplan</title>
     <link href="https://pipeman.org/std-style.css" rel="stylesheet" type="text/css">
 </head>
-<style>
-    * {
-        font-family: Arial, serif
-    }
-
-    .loading-text {
-        color: lightgrey
-    }
-</style>
 <body style="background: url('someone.gif')">
 <h1 style="color: forestgreen; font-family: Arial, serif">WLS-Vertretungsplan</h1>
 <input id="button-today" class="text-input button" type="button" value="Heute" onclick="getPlanToday()">
@@ -22,8 +13,7 @@
 <br>
 <div id="loading-div" style="text-align: center; width: 300px" hidden>
     <img style="margin: auto" src="loading-137px.gif" alt="Loading-Gif">
-    <h2 class="loading-text">Lädt... Kann mehrere Sekunden dauern...</h2>
-    <h3 class="loading-text">Ja, Fronter in Kombination mit OneDrive ist sehr langsam, aber da kann ich auch nichts dran ändern</h3>
+    <h2>Lädt...</h2>
 </div>
 <div id="plan-div">
 

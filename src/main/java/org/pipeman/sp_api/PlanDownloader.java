@@ -8,16 +8,29 @@ import org.pipeman.ilaw.Utils;
 import java.net.http.HttpResponse;
 
 public class PlanDownloader {
-    public static final PlanDownloader INSTANCE = new PlanDownloader();
     private final Object todayPlanLock = new Object();
+    private long lastTodayPlanUpdate = 0;
     private String todayPlan = "";
     private final Object tomorrowPlanLock = new Object();
+    private long lastTomorrowPlanUpdate = 0;
     private String tomorrowPlan = "";
     private ILAW ilaw;
+    private long lastLogin = 0;
 
-    private byte[] getPlan(boolean today, Config config, boolean login) {
+    public PlanDownloader(Config config) {
+//        try {
+//            ilaw = ILAW.login(config.ilUrl, config.ilUser, config.ilPassword);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+    }
+
+    private String getPlan(boolean today, Config config) {
         try {
-            if (login) ilaw = ILAW.login(config.ilUrl, config.ilUser, config.ilPassword);
+            if (lastLogin < System.currentTimeMillis() - 600_000) {
+                ilaw = ILAW.login(config.ilUrl, config.ilUser, config.ilPassword);
+                lastLogin = System.currentTimeMillis();
+            }
 
             String fileUrl = "/LearningToolElement/ViewLearningToolElement.aspx?LearningToolElementId="
                              + (today ? config.ilTodayPlanId : config.ilTomorrowPlanId);
@@ -31,36 +44,34 @@ public class PlanDownloader {
             String oneDriveBody = Utils.getLast(Utils.followRedirects(proxyUrl, ilaw.getHttpClient())).body();
 
             int start = oneDriveBody.indexOf("\"downloadUrl\":\"") + 15;
-            return ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body();
+            return SpApiUtils.convertPdfToHtml(ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public byte[] updatePlan(boolean today) {
-        if (today) {
-            synchronized (todayPlanLock) {
-                byte[] plan = getPlan(true, Main.conf(), true);
-                todayPlan = SpApiUtils.convertPdfToHtml(plan);
-                return plan;
-            }
-        } else {
-            synchronized (tomorrowPlanLock) {
-                byte[] plan = getPlan(false, Main.conf(), false);
-                tomorrowPlan = SpApiUtils.convertPdfToHtml(plan);
-                return plan;
-            }
-        }
-    }
-
     public String getTodayPlan() {
         synchronized (todayPlanLock) {
+            if (lastTodayPlanUpdate < System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) {
+                lastTodayPlanUpdate = System.currentTimeMillis();
+
+                long start = System.nanoTime();
+                todayPlan = getPlan(true, Main.conf());
+                System.out.println((System.nanoTime() - start) / 1_000_000 + "ms");
+            }
             return todayPlan;
         }
     }
 
     public String getTomorrowPlan() {
         synchronized (tomorrowPlanLock) {
+            if (lastTomorrowPlanUpdate < System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) {
+                lastTomorrowPlanUpdate = System.currentTimeMillis();
+
+                long start = System.nanoTime();
+                tomorrowPlan = getPlan(false, Main.conf());
+                System.out.println((System.nanoTime() - start) / 1_000_000 + "ms");
+            }
             return tomorrowPlan;
         }
     }

@@ -2,6 +2,7 @@ package org.pipeman.sp_api;
 
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+import org.pipeman.PlanSaver;
 import org.pipeman.pconf.ConfigProvider;
 
 import java.nio.file.Files;
@@ -31,6 +32,8 @@ public class Main {
                 get("plans/tomorrow", API::getPlanTomorrow);
             });
         });
+
+        PlanSaver.start(conf().planFetchInterval * 1000);
     }
 
     public static Config conf() {

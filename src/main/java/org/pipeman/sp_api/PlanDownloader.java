@@ -4,10 +4,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.pipeman.ilaw.ILAW;
 import org.pipeman.ilaw.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.http.HttpResponse;
 
 public class PlanDownloader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlanDownloader.class);
+
     private final Object todayPlanLock = new Object();
     private long lastTodayPlanUpdate = 0;
     private String todayPlan = "";
@@ -16,6 +20,7 @@ public class PlanDownloader {
     private String tomorrowPlan = "";
     private ILAW ilaw;
     private long lastLogin = 0;
+    private final Object loginLock = new Object();
 
     public PlanDownloader(Config config) {
 //        try {
@@ -27,9 +32,11 @@ public class PlanDownloader {
 
     private String getPlan(boolean today, Config config) {
         try {
-            if (lastLogin < System.currentTimeMillis() - 600_000) {
-                ilaw = ILAW.login(config.ilUrl, config.ilUser, config.ilPassword);
-                lastLogin = System.currentTimeMillis();
+            synchronized (loginLock) {
+                if (lastLogin < System.currentTimeMillis() - 600_000) {
+                    ilaw = ILAW.login(config.ilUrl, config.ilUser, config.ilPassword);
+                    lastLogin = System.currentTimeMillis();
+                }
             }
 
             String fileUrl = "/LearningToolElement/ViewLearningToolElement.aspx?LearningToolElementId="
@@ -57,7 +64,7 @@ public class PlanDownloader {
 
                 long start = System.nanoTime();
                 todayPlan = getPlan(true, Main.conf());
-                System.out.println((System.nanoTime() - start) / 1_000_000 + "ms");
+                logDuration(start);
             }
             return todayPlan;
         }
@@ -70,9 +77,13 @@ public class PlanDownloader {
 
                 long start = System.nanoTime();
                 tomorrowPlan = getPlan(false, Main.conf());
-                System.out.println((System.nanoTime() - start) / 1_000_000 + "ms");
+                logDuration(start);
             }
             return tomorrowPlan;
         }
+    }
+
+    private static void logDuration(long start) {
+        LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
     }
 }

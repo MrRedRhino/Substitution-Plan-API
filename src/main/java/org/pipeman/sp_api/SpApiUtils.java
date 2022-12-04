@@ -8,10 +8,9 @@ import java.io.OutputStream;
 
 public class SpApiUtils {
     public static String convertPdfToHtml(byte[] input) {
-        PdfDocument pdf = new PdfDocument(input);
-
         OutputStream output = new ByteArrayOutputStream();
-        pdf.saveToStream(output, FileFormat.HTML);
-        return output.toString();
+        new PdfDocument(input).saveToStream(output, FileFormat.HTML);
+        return output.toString()
+                .replace("Evaluation Warning : The document was created with Spire.PDF for java.", "");
     }
 }

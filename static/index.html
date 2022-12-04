@@ -16,65 +16,48 @@
 </style>
 <body style="background: url('someone.gif')">
 <h1 style="color: forestgreen; font-family: Arial, serif">WLS-Vertretungsplan</h1>
-<input id="button-today" class="text-input button" type="button" value="Heute" onclick="getPlanToday()">
-<br>
-<input id="button-tomorrow" class="text-input button" type="button" value="Morgen" onclick="getPlanTomorrow()">
-<br>
 <div id="loading-div" style="text-align: center; width: 300px" hidden>
     <img style="margin: auto" src="loading-137px.gif" alt="Loading-Gif">
     <h2 class="loading-text">Lädt... Kann mehrere Sekunden dauern...</h2>
-    <h3 class="loading-text">Ja, Fronter in Kombination mit OneDrive ist sehr langsam, aber da kann ich auch nichts dran ändern</h3>
+    <h3 class="loading-text">Ja, Fronter in Kombination mit OneDrive ist sehr langsam, aber da kann ich auch nichts dran
+        ändern</h3>
 </div>
-<div id="plan-div">
+<div style="display: flex; width: 100%">
+    <div id="plan-div">
 
+    </div>
+    <div id="plan-div2">
+
+    </div>
 </div>
 </body>
 <script>
-    const highlightBackgroundColor = "forestgreen";
-    const highlightColor = "lightgrey";
-
-    function setHighlight(buttonToday, highlight) {
-        document.getElementById("button-today").style.backgroundColor = highlight ? highlightBackgroundColor : highlightColor;
-        document.getElementById("button-tomorrow").style.backgroundColor = !highlight ? highlightBackgroundColor : highlightColor;
-    }
-
     function setLoading(loading) {
         document.getElementById("loading-div").hidden = !loading;
     }
 
     window.onload = () => {
-        setHighlight(true, true);
-        if (isWeekend()) getPlanTomorrow();
-        else getPlanToday();
+        getPlans();
+        // if (isWeekend()) getPlanTomorrow();
+        // else getPlanToday();
+    }
+
+    function getPlans() {
+        setLoading(true);
+        let loading = 2;
+        fetch("api/plans/today").then(async response => {
+            document.getElementById("plan-div").innerHTML = await response.text();
+            setLoading(false)
+        });
+        fetch("api/plans/tomorrow").then(async response => {
+            document.getElementById("plan-div2").innerHTML = await response.text();
+            setLoading(false)
+        });
     }
 
     function isWeekend() {
         const date = new Date();
         return date.getDay() === 0 || date.getDay() === 6;
-    }
-
-    function getPlanToday() {
-        document.getElementById("plan-div").innerHTML = "";
-        setHighlight(true, true)
-        setLoading(true)
-
-        fetch("api/plans/today").then(async response => {
-            document.getElementById("plan-div").innerHTML = await response.text();
-            document.title = "Vertretungsplan Heute";
-            setLoading(false)
-        });
-    }
-
-    function getPlanTomorrow() {
-        setHighlight(true, false)
-        document.getElementById("plan-div").innerHTML = "";
-        setLoading(true)
-
-        fetch("api/plans/tomorrow").then(async response => {
-            document.getElementById("plan-div").innerHTML = await response.text();
-            document.title = "Vertretungsplan Morgen";
-            setLoading(false)
-        });
     }
 </script>
 </html>

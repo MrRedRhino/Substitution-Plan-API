@@ -1,5 +1,7 @@
 package org.pipeman.sp_api;
 
+import com.spire.pdf.FileFormat;
+import com.spire.pdf.PdfDocument;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.pipeman.ilaw.ILAW;
@@ -7,6 +9,8 @@ import org.pipeman.ilaw.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.net.http.HttpResponse;
 
 public class PlanDownloader {
@@ -51,7 +55,7 @@ public class PlanDownloader {
             String oneDriveBody = Utils.getLast(Utils.followRedirects(proxyUrl, ilaw.getHttpClient())).body();
 
             int start = oneDriveBody.indexOf("\"downloadUrl\":\"") + 15;
-            return SpApiUtils.convertPdfToHtml(ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body());
+            return convertPdfToHtml(ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -81,6 +85,13 @@ public class PlanDownloader {
             }
             return tomorrowPlan;
         }
+    }
+
+    private String convertPdfToHtml(byte[] input) {
+        OutputStream output = new ByteArrayOutputStream();
+        new PdfDocument(input).saveToStream(output, FileFormat.HTML);
+        return output.toString()
+                .replace("Evaluation Warning : The document was created with Spire.PDF for java.", "");
     }
 
     private static void logDuration(long start) {

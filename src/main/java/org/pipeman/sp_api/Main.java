@@ -1,8 +1,13 @@
 package org.pipeman.sp_api;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+import io.javalin.json.JavalinJackson;
 import org.pipeman.pconf.ConfigProvider;
+import org.pipeman.sp_api.api.API;
+import org.pipeman.sp_api.pdfs.PdfDataSerializer;
+import org.pipeman.sp_api.pdfs.PlanData;
 
 import java.nio.file.Files;
 
@@ -11,6 +16,7 @@ import static io.javalin.apibuilder.ApiBuilder.path;
 
 public class Main {
     public static final ConfigProvider<Config> CONFIG = ConfigProvider.of("config.properties", Config::new);
+    public static final String SPIRE_WARNING = "Evaluation Warning : The document was created with Spire.PDF for java.";
 
     public static void main(String[] args) {
         Javalin app = Javalin.create(config -> {
@@ -31,6 +37,10 @@ public class Main {
                 get("plans/tomorrow", API::getPlanTomorrow);
             });
         });
+
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(PlanData.class, new PdfDataSerializer());
+        JavalinJackson.Companion.defaultMapper().registerModule(module);
     }
 
     public static Config conf() {

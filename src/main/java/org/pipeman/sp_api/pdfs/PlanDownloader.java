@@ -1,4 +1,4 @@
-package org.pipeman.sp_api;
+package org.pipeman.sp_api.pdfs;
 
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
@@ -6,35 +6,28 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.pipeman.ilaw.ILAW;
 import org.pipeman.ilaw.Utils;
+import org.pipeman.sp_api.Config;
+import org.pipeman.sp_api.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.http.HttpResponse;
 
 public class PlanDownloader {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanDownloader.class);
 
-    private final Object todayPlanLock = new Object();
-    private long lastTodayPlanUpdate = 0;
-    private String todayPlan = "";
-    private final Object tomorrowPlanLock = new Object();
-    private long lastTomorrowPlanUpdate = 0;
-    private String tomorrowPlan = "";
+    private final DayData todayData = new DayData();
+    private final DayData tomorrowData = new DayData();
+
     private ILAW ilaw;
     private long lastLogin = 0;
     private final Object loginLock = new Object();
 
-    public PlanDownloader(Config config) {
-//        try {
-//            ilaw = ILAW.login(config.ilUrl, config.ilUser, config.ilPassword);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-    }
-
-    private String getPlan(boolean today, Config config) {
+    private byte[] getPlan(boolean today, Config config) {
         try {
             synchronized (loginLock) {
                 if (lastLogin < System.currentTimeMillis() - 600_000) {
@@ -55,43 +48,53 @@ public class PlanDownloader {
             String oneDriveBody = Utils.getLast(Utils.followRedirects(proxyUrl, ilaw.getHttpClient())).body();
 
             int start = oneDriveBody.indexOf("\"downloadUrl\":\"") + 15;
-            return convertPdfToHtml(ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body());
+            return ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String getTodayPlan() {
-        synchronized (todayPlanLock) {
-            if (lastTodayPlanUpdate < System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) {
-                lastTodayPlanUpdate = System.currentTimeMillis();
+    private void refreshCache(boolean today, DayData data) {
+        synchronized (data.lock()) {
+            if (data.lastUpdate() < System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) {
+                data.lastUpdate(System.currentTimeMillis());
 
                 long start = System.nanoTime();
-                todayPlan = getPlan(true, Main.conf());
+                byte[] rawData = getPlan(today, Main.conf());
+                PdfDocument document = new PdfDocument(rawData);
+                data.html(convertPdfToHtml(document));
+                data.data(PlanData.from(document));
+                data.pdf(rawData);
+                data.image(convertPdfToImage(document));
                 logDuration(start);
             }
-            return todayPlan;
         }
     }
 
-    public String getTomorrowPlan() {
-        synchronized (tomorrowPlanLock) {
-            if (lastTomorrowPlanUpdate < System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) {
-                lastTomorrowPlanUpdate = System.currentTimeMillis();
-
-                long start = System.nanoTime();
-                tomorrowPlan = getPlan(false, Main.conf());
-                logDuration(start);
-            }
-            return tomorrowPlan;
-        }
-    }
-
-    private String convertPdfToHtml(byte[] input) {
+    private String convertPdfToHtml(PdfDocument pdf) {
         OutputStream output = new ByteArrayOutputStream();
-        new PdfDocument(input).saveToStream(output, FileFormat.HTML);
-        return output.toString()
-                .replace("Evaluation Warning : The document was created with Spire.PDF for java.", "");
+        pdf.saveToStream(output, FileFormat.HTML);
+        return output.toString().replace(Main.SPIRE_WARNING, "");
+    }
+
+    private byte[] convertPdfToImage(PdfDocument pdf) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(pdf.saveAsImage(0), "png", os);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return os.toByteArray();
+    }
+
+    public DayData getTodayData() {
+        refreshCache(true, todayData);
+        return todayData;
+    }
+
+    public DayData getTomorrowData() {
+        refreshCache(false, tomorrowData);
+        return tomorrowData;
     }
 
     private static void logDuration(long start) {

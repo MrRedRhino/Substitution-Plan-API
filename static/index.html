@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Stundenplan</title>
+    <title>Vertretungsplan</title>
     <link href="https://pipeman.org/std-style.css" rel="stylesheet" type="text/css">
 </head>
 <style>
@@ -13,51 +13,109 @@
     .loading-text {
         color: lightgrey
     }
+
+    body {
+        background-color: #62769b;
+        /*darkslategrey*/
+        /*background: url('someone.gif')*/
+    }
+
+    .plan-div {
+        transform: translate(-40px, -40px) scale(0.8);
+        transform-origin: 0 0;
+    }
+
+    .tomorrow {
+        transform: translate(-250px, -40px) scale(0.8);
+        transform-origin: 0 0
+    }
+
+    .plan-div-no-translate {
+        transform: translate(-120px, -40px) scale(0.8);
+        transform-origin: 0 0;
+    }
+
+    .tomorrow-no-translate {
+        transform: translate(-120px, -320px) scale(0.8);
+        transform-origin: 0 0
+    }
 </style>
-<body style="background: url('someone.gif')">
-<h1 style="color: forestgreen; font-family: Arial, serif">WLS-Vertretungsplan</h1>
+<body>
+<h2 style="color: #204059; font-family: Arial, serif">WLS-Vertretungsplan</h2>
 <div id="loading-div" style="text-align: center; width: 300px" hidden>
     <img style="margin: auto" src="loading-137px.gif" alt="Loading-Gif">
-    <h2 class="loading-text">Lädt... Kann mehrere Sekunden dauern...</h2>
-    <h3 class="loading-text">Ja, Fronter in Kombination mit OneDrive ist sehr langsam, aber da kann ich auch nichts dran
-        ändern</h3>
+    <h2 class="loading-text">Lädt...</h2>
 </div>
-<div style="display: flex; width: 100%">
-    <div id="plan-div">
+<div id="sp-div" style="display: flex; width: 1000px; flex-direction: row; align-items: center">
+    <div class="plan-div" id="today">
 
     </div>
-    <div id="plan-div2">
+    <div class="tomorrow" id="tomorrow">
 
     </div>
 </div>
 </body>
 <script>
+    let todayReady = false;
+    let tomorrowReady = false;
+
+    const delay = setTimeout(() => {
+        setLoading(true);
+    }, 100);
+
     function setLoading(loading) {
         document.getElementById("loading-div").hidden = !loading;
     }
 
-    window.onload = () => {
-        getPlans();
-        // if (isWeekend()) getPlanTomorrow();
-        // else getPlanToday();
+    function onLoadEnd() {
+        onResize();
+        if (todayReady && tomorrowReady) {
+            setLoading(false);
+            clearTimeout(delay);
+        }
     }
 
     function getPlans() {
-        setLoading(true);
-        let loading = 2;
-        fetch("api/plans/today").then(async response => {
-            document.getElementById("plan-div").innerHTML = await response.text();
-            setLoading(false)
+        fetch("api/plans/today").then(response => {
+            response.text().then(text => {
+                document.getElementById("today").innerHTML = text;
+                todayReady = true;
+                onLoadEnd();
+            });
         });
-        fetch("api/plans/tomorrow").then(async response => {
-            document.getElementById("plan-div2").innerHTML = await response.text();
-            setLoading(false)
+
+        fetch("api/plans/tomorrow").then(response => {
+            response.text().then(text => {
+                document.getElementById("tomorrow").innerHTML = text;
+                tomorrowReady = true;
+                onLoadEnd();
+            });
         });
     }
 
-    function isWeekend() {
-        const date = new Date();
-        return date.getDay() === 0 || date.getDay() === 6;
+    function onResize() {
+        // 1140
+        if (window.innerWidth < 1140) {
+            document.getElementById("sp-div").style.flexDirection = "column";
+
+            document.getElementById("today").classList.remove("plan-div");
+            document.getElementById("today").classList.add("plan-div-no-translate");
+            document.getElementById("tomorrow").classList.remove("tomorrow");
+            document.getElementById("tomorrow").classList.add("tomorrow-no-translate");
+        } else {
+            document.getElementById("sp-div").style.flexDirection = "row";
+
+            document.getElementById("today").classList.add("plan-div");
+            document.getElementById("today").classList.remove("plan-div-no-translate");
+            document.getElementById("tomorrow").classList.add("tomorrow");
+            document.getElementById("tomorrow").classList.remove("tomorrow-no-translate");
+        }
     }
+
+    window.addEventListener('resize', () => {
+        onResize();
+    });
+
+    getPlans();
 </script>
 </html>

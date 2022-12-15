@@ -50,23 +50,29 @@ public class PlanDownloader {
             int start = oneDriveBody.indexOf("\"downloadUrl\":\"") + 15;
             return ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new RuntimeException();
         }
     }
 
     private void refreshCache(boolean today, DayData data) {
         synchronized (data.lock()) {
             if (data.lastUpdate() < System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) {
-                data.lastUpdate(System.currentTimeMillis());
-
                 long start = System.nanoTime();
                 byte[] rawData = getPlan(today, Main.conf());
+                LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
+                start = System.nanoTime();
+
                 PdfDocument document = new PdfDocument(rawData);
+
                 data.html(convertPdfToHtml(document));
                 data.data(PlanData.from(document));
                 data.pdf(rawData);
                 data.image(convertPdfToImage(document));
-                logDuration(start);
+
+                LOGGER.info("Took {}ms to convert plan", (System.nanoTime() - start) / 1_000_000);
+
+                data.lastUpdate(System.currentTimeMillis());
             }
         }
     }
@@ -95,9 +101,5 @@ public class PlanDownloader {
     public DayData getTomorrowData() {
         refreshCache(false, tomorrowData);
         return tomorrowData;
-    }
-
-    private static void logDuration(long start) {
-        LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
     }
 }

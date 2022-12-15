@@ -53,7 +53,7 @@ public class Utils {
 
     public static HttpRequest createRequest(String url) {
         return HttpRequest.newBuilder()
-                .uri(URI.create(url.strip()))
+                .uri(URI.create(url))
                 .build();
     }
 }

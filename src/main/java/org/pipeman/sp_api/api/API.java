@@ -5,18 +5,20 @@ import io.javalin.http.Header;
 import org.pipeman.sp_api.pdfs.DayData;
 import org.pipeman.sp_api.pdfs.PlanDownloader;
 
+import java.util.function.Supplier;
+
 public class API {
     private static final PlanDownloader DOWNLOADER = new PlanDownloader();
 
     public static void getPlanToday(Context ctx) {
-        sendData(ctx, DOWNLOADER.getTodayData());
+        sendData(ctx, DOWNLOADER::getTodayData);
     }
 
     public static void getPlanTomorrow(Context ctx) {
-        sendData(ctx, DOWNLOADER.getTomorrowData());
+        sendData(ctx, DOWNLOADER::getTomorrowData);
     }
 
-    private static void sendData(Context ctx, DayData data) {
+    private static void sendData(Context ctx, Supplier<DayData> dataSupplier) {
         String formatString = ctx.queryParam("format");
         if (formatString == null) Responses.FORMAT_REQUIRED.apply(ctx);
         else {
@@ -26,6 +28,7 @@ public class API {
                 return;
             }
 
+            DayData data = dataSupplier.get();
             switch (format) {
                 case HTML -> ctx.html(data.html());
                 case PDF -> ctx.result(data.pdf()).header(Header.CONTENT_TYPE, "application/pdf");

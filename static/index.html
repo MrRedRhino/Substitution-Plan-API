@@ -76,7 +76,7 @@
     }
 
     function getPlans() {
-        fetch("api/plans/today").then(response => {
+        fetch("api/plans/today?format=html").then(response => {
             response.text().then(text => {
                 document.getElementById("today").innerHTML = text;
                 todayReady = true;
@@ -84,7 +84,7 @@
             });
         });
 
-        fetch("api/plans/tomorrow").then(response => {
+        fetch("api/plans/tomorrow?format=html").then(response => {
             response.text().then(text => {
                 document.getElementById("tomorrow").innerHTML = text;
                 tomorrowReady = true;

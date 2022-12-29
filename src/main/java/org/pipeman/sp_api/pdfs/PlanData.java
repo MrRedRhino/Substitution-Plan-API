@@ -6,11 +6,13 @@ import com.spire.pdf.utilities.PdfTable;
 import com.spire.pdf.utilities.PdfTableExtractor;
 
 import java.awt.geom.Rectangle2D;
+import java.util.regex.Pattern;
 
 @JsonSerialize(using = PdfDataSerializer.class)
 public class PlanData {
     private final String message;
     private final Row[] substitutions;
+    private static final Pattern MESSAGE_END = Pattern.compile("Klasse\\s+Std\\s+Vertretung\\s+Lehrer\\s+Raum\\s+");
 
     private PlanData(String message, Row[] substitutions) {
         this.message = message;
@@ -18,12 +20,16 @@ public class PlanData {
     }
 
     public static PlanData from(PdfDocument pdf) {
-        PdfTable table = new PdfTableExtractor(pdf).extractTable(0)[0];
+        PdfTable[] tables = new PdfTableExtractor(pdf).extractTable(0);
+        Row[] substitutions = new Row[0];
+        if (tables != null) {
+            PdfTable table = tables[0];
+            substitutions = new Row[table.getRowCount() - 1];
 
-        Row[] substitutions = new Row[table.getRowCount() - 1];
-        if (substitutions.length > 1) {
-            for (int i = 1; i <= substitutions.length; i++) {
-                substitutions[i - 1] = Row.extractFromTable(i, table);
+            if (substitutions.length > 1) {
+                for (int i = 1; i <= substitutions.length; i++) {
+                    substitutions[i - 1] = Row.extractFromTable(i, table);
+                }
             }
         }
 
@@ -32,7 +38,7 @@ public class PlanData {
         if (lines.length > 2)
             for (int i = 2; i < lines.length; i++) {
                 String line = lines[i].strip();
-                if (line.isEmpty()) break;
+                if (MESSAGE_END.matcher(line).find()) break;
                 if (i > 2) output.append('\n');
                 output.append(line);
             }

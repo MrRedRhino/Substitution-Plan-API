@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Vertretungsplan</title>
-    <link href="https://pipeman.org/std-style.css" rel="stylesheet" type="text/css">
+    <link id="theme-css" href="/default.css" rel="stylesheet" type="text/css">
 </head>
 <style>
     * {
-        font-family: Arial, serif
+        font-family: Arial, serif;
+        transition: background-color 0.1s;
     }
 
     .loading-text {
-        color: lightgrey
+        color: lightgrey;
     }
 
     body {
-        background-color: #62769b;
+        background-color: var(--background-color);
         /*darkslategrey*/
-        /*background: url('someone.gif')*/
+        background-image: url("https://pipeman.org/pipe.svg");
+        background-size: 30px;
     }
 
     .plan-div {
@@ -39,18 +41,58 @@
         transform: translate(-120px, -320px) scale(0.8);
         transform-origin: 0 0
     }
+
+    .header {
+        text-align: left;
+        color: var(--header-color);
+        padding-left: 15px;
+        font-size: 25px;
+    }
+
+    #sp-div {
+        display: flex;
+        width: 1000px;
+        flex-direction: row;
+        align-items: center
+    }
+
+    .theme-button {
+        line-height: 41px;
+        height: 37px;
+        width: 37px;
+        font-size: 2em;
+        border-radius: 50%;
+        background-color: var(--header-color);
+        cursor: pointer;
+        border: none;
+        align-self: center;
+    }
+
+    .no-hover {
+        pointer-events: none;
+    }
+
+    .header-wrapper {
+        display: flex;
+        gap: 1rem;
+    }
 </style>
 <body>
-<h2 style="color: #204059; font-family: Arial, serif">WLS-Vertretungsplan</h2>
+<div class="header-wrapper">
+    <h2 class="header">WLS-Vertretungsplan</h2>
+    <button class="theme-button" id="theme-button" onclick="toggleTheme()">
+    </button>
+</div>
+
 <div id="loading-div" style="text-align: center; width: 300px" hidden>
     <img style="margin: auto" src="loading-137px.gif" alt="Loading-Gif">
     <h2 class="loading-text">Lädt...</h2>
 </div>
-<div id="sp-div" style="display: flex; width: 1000px; flex-direction: row; align-items: center">
-    <div class="plan-div" id="today">
+<div id="sp-div">
+    <div class="no-hover plan-div" id="today">
 
     </div>
-    <div class="tomorrow" id="tomorrow">
+    <div class="no-hover tomorrow" id="tomorrow">
 
     </div>
 </div>
@@ -58,10 +100,31 @@
 <script>
     let todayReady = false;
     let tomorrowReady = false;
+    const moon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class=""><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+    const sun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class=""><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
 
     const delay = setTimeout(() => {
         setLoading(true);
     }, 100);
+
+    function toggleTheme() {
+        const mode = !isLightMode();
+        localStorage.setItem("theme", mode ? "default" : "dark");
+        setTheme(mode);
+    }
+
+    function isLightMode() {
+        if (localStorage.getItem("theme") === "dark") return false;
+        else {
+            localStorage.setItem("theme", "default");
+            return true;
+        }
+    }
+
+    function setTheme(lightMode) {
+        document.getElementById("theme-css").href = lightMode ? "/default.css" : "/dark.css";
+        document.getElementById("theme-button").innerHTML = lightMode ? moon : sun;
+    }
 
     function setLoading(loading) {
         document.getElementById("loading-div").hidden = !loading;
@@ -116,6 +179,7 @@
         onResize();
     });
 
+    setTheme(isLightMode());
     getPlans();
 </script>
 </html>

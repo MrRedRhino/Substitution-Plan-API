@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=0.9, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Vertretungsplan</title>
     <link id="theme-css" href="/default.css" rel="stylesheet" type="text/css">
 </head>
@@ -12,7 +15,7 @@
     }
 
     .loading-text {
-        color: lightgrey;
+        color: var(--text-color);
     }
 
     body {
@@ -23,20 +26,22 @@
     }
 
     .plan-div {
-        transform: translate(-40px, -40px) scale(0.8);
+        transform: translate(-40px, -20px) scale(0.8);
         transform-origin: 0 0;
     }
 
     .tomorrow {
-        transform: translate(-250px, -40px) scale(0.8);
+        transform: translate(-250px, -20px) scale(0.8);
         transform-origin: 0 0
     }
 
+    /*THIS IS USED*/
     .plan-div-no-translate {
         transform: translate(-120px, -40px) scale(0.8);
         transform-origin: 0 0;
     }
 
+    /*THIS IS USED*/
     .tomorrow-no-translate {
         transform: translate(-120px, -320px) scale(0.8);
         transform-origin: 0 0
@@ -45,7 +50,6 @@
     .header {
         text-align: left;
         color: var(--header-color);
-        padding-left: 15px;
         font-size: 25px;
     }
 
@@ -57,10 +61,10 @@
     }
 
     .theme-button {
-        line-height: 41px;
+        line-height: 0;
         height: 37px;
         width: 37px;
-        font-size: 2em;
+        font-size: 5px;
         border-radius: 50%;
         background-color: var(--header-color);
         cursor: pointer;
@@ -68,7 +72,7 @@
         align-self: center;
     }
 
-    .no-hover {
+    .no-pointer {
         pointer-events: none;
     }
 
@@ -76,9 +80,43 @@
         display: flex;
         gap: 1rem;
     }
+
+    .backdrop {
+        padding-left: 15px;
+        padding-bottom: 3px;
+        background-color: var(--header-background);
+        border-radius: 20px;
+        max-width: 1140px;
+    }
+
+    h3 {
+        padding-top: 15px;
+        margin-bottom: 0;
+    }
+
+    h4 {
+        font-size: 20px;
+        color: var(--text-color);
+        margin-top: 13px;
+    }
+
+    .substitution-table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .table-wrapper {
+        padding: 15px 15px 15px 0;
+    }
+
+    tr, td, th {
+        border: 2px solid var(--table-line);
+        padding: 8px;
+        color: var(--text-color);
+    }
 </style>
 <body>
-<div class="header-wrapper">
+<div class="header-wrapper backdrop">
     <h2 class="header">WLS-Vertretungsplan</h2>
     <button class="theme-button" id="theme-button" onclick="toggleTheme()">
     </button>
@@ -88,98 +126,53 @@
     <img style="margin: auto" src="loading-137px.gif" alt="Loading-Gif">
     <h2 class="loading-text">Lädt...</h2>
 </div>
+
 <div id="sp-div">
-    <div class="no-hover plan-div" id="today">
+    <div class="no-pointer plan-div" id="today">
 
     </div>
-    <div class="no-hover tomorrow" id="tomorrow">
+    <div class="no-pointer tomorrow" id="tomorrow">
 
     </div>
 </div>
+
+<div class="backdrop" id="wrapper-today" hidden="">
+    <h3 class="header">Mitteilungen</h3>
+    <h4 id="message-today"></h4>
+
+    <h3 class="header" style="padding-bottom: 10px">Vertretungen</h3>
+    <div class="table-wrapper">
+        <table class="substitution-table" id="table-today">
+            <tr>
+                <th>Klasse</th>
+                <th>Std</th>
+                <th>Vertretung</th>
+                <th>Lehrer</th>
+                <th>Raum</th>
+                <th>Sonstiges</th>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="backdrop" id="wrapper-tomorrow" hidden="">
+    <h3 class="header">Mitteilungen</h3>
+    <h4 id="message-tomorrow"></h4>
+
+    <h3 class="header" style="padding-bottom: 10px">Vertretungen</h3>
+    <div class="table-wrapper">
+        <table class="substitution-table" id="table-tomorrow">
+            <tr>
+                <th>Klasse</th>
+                <th>Std</th>
+                <th>Vertretung</th>
+                <th>Lehrer</th>
+                <th>Raum</th>
+                <th>Sonstiges</th>
+            </tr>
+        </table>
+    </div>
+</div>
 </body>
-<script>
-    let todayReady = false;
-    let tomorrowReady = false;
-    const moon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class=""><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
-    const sun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class=""><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
-
-    const delay = setTimeout(() => {
-        setLoading(true);
-    }, 100);
-
-    function toggleTheme() {
-        const mode = !isLightMode();
-        localStorage.setItem("theme", mode ? "default" : "dark");
-        setTheme(mode);
-    }
-
-    function isLightMode() {
-        if (localStorage.getItem("theme") === "dark") return false;
-        else {
-            localStorage.setItem("theme", "default");
-            return true;
-        }
-    }
-
-    function setTheme(lightMode) {
-        document.getElementById("theme-css").href = lightMode ? "/default.css" : "/dark.css";
-        document.getElementById("theme-button").innerHTML = lightMode ? moon : sun;
-    }
-
-    function setLoading(loading) {
-        document.getElementById("loading-div").hidden = !loading;
-    }
-
-    function onLoadEnd() {
-        onResize();
-        if (todayReady && tomorrowReady) {
-            setLoading(false);
-            clearTimeout(delay);
-        }
-    }
-
-    function getPlans() {
-        fetch("api/plans/today?format=html").then(response => {
-            response.text().then(text => {
-                document.getElementById("today").innerHTML = text;
-                todayReady = true;
-                onLoadEnd();
-            });
-        });
-
-        fetch("api/plans/tomorrow?format=html").then(response => {
-            response.text().then(text => {
-                document.getElementById("tomorrow").innerHTML = text;
-                tomorrowReady = true;
-                onLoadEnd();
-            });
-        });
-    }
-
-    function onResize() {
-        // 1140
-        if (window.innerWidth < 1140) {
-            document.getElementById("sp-div").style.flexDirection = "column";
-
-            document.getElementById("today").classList.remove("plan-div");
-            document.getElementById("today").classList.add("plan-div-no-translate");
-            document.getElementById("tomorrow").classList.remove("tomorrow");
-            document.getElementById("tomorrow").classList.add("tomorrow-no-translate");
-        } else {
-            document.getElementById("sp-div").style.flexDirection = "row";
-
-            document.getElementById("today").classList.add("plan-div");
-            document.getElementById("today").classList.remove("plan-div-no-translate");
-            document.getElementById("tomorrow").classList.add("tomorrow");
-            document.getElementById("tomorrow").classList.remove("tomorrow-no-translate");
-        }
-    }
-
-    window.addEventListener('resize', () => {
-        onResize();
-    });
-
-    setTheme(isLightMode());
-    getPlans();
-</script>
+<script src="main.js" async defer></script>
 </html>

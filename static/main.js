@@ -61,6 +61,8 @@ function getPlans(tables) {
 
                 const table = document.getElementById("table-today");
                 j["substitutions"].forEach(s => {
+                    document.getElementById("no-subs-today").hidden = true;
+                    document.getElementById("table-today").hidden = false;
                     addTableRow(table, s["class"], s["lesson"], s["substitution"], s["teacher"], s["room"], s["other"]);
                 });
                 todayReady = true;
@@ -77,6 +79,8 @@ function getPlans(tables) {
 
                 const table = document.getElementById("table-tomorrow");
                 j["substitutions"].forEach(s => {
+                    document.getElementById("no-subs-tomorrow").hidden = true;
+                    document.getElementById("table-tomorrow").hidden = false;
                     addTableRow(table, s["class"], s["lesson"], s["substitution"], s["teacher"], s["room"], s["other"]);
                 });
                 tomorrowReady = true;

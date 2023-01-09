@@ -127,12 +127,12 @@
     </button>
 </div>
 
-<div id="loading-div" style="text-align: center; width: 300px" hidden>
-    <img style="margin: auto" src="loading-137px.gif" alt="Loading-Gif">
-    <h2 class="loading-text">Lädt...</h2>
-</div>
-
 <div id="sp-div">
+    <div id="loading-div" style="text-align: center; width: 300px" hidden>
+        <img style="margin: auto" src="loading-137px.gif" alt="Loading-Gif">
+        <h2 class="loading-text">Lädt...</h2>
+    </div>
+
     <div class="no-pointer plan-div" id="today">
 
     </div>
@@ -142,10 +142,10 @@
 </div>
 
 <div class="backdrop" id="wrapper-today" hidden="">
-    <h3 class="header">Mitteilungen | Heute</h3>
+    <h3 class="header">Mitteilungen | Heute <span class="date-today"></span></h3>
     <h4 id="message-today"></h4>
 
-    <h3 class="header" style="padding-bottom: 10px">Vertretungen | Heute</h3>
+    <h3 class="header" style="padding-bottom: 10px">Vertretungen | Heute <span class="date-today"></span></h3>
     <h4 id="no-subs-today">Keine Vertretungen</h4>
     <div class="table-wrapper">
         <table class="substitution-table" id="table-today" hidden="">
@@ -162,10 +162,10 @@
 </div>
 
 <div class="backdrop" id="wrapper-tomorrow" hidden="">
-    <h3 class="header">Mitteilungen | Morgen</h3>
+    <h3 class="header">Mitteilungen | Morgen <span class="date-tomorrow"></span></h3>
     <h4 id="message-tomorrow"></h4>
 
-    <h3 class="header" style="padding-bottom: 10px">Vertretungen | Morgen</h3>
+    <h3 class="header" style="padding-bottom: 10px">Vertretungen | Morgen <span class="date-tomorrow"></span></h3>
     <h4 id="no-subs-tomorrow">Keine Vertretungen</h4>
     <div class="table-wrapper">
         <table class="substitution-table" id="table-tomorrow" hidden="">

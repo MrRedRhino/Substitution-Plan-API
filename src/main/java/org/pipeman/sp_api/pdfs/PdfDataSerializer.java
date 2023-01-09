@@ -20,6 +20,7 @@ public class PdfDataSerializer extends StdSerializer<PlanData> {
     public void serialize(PlanData data, JsonGenerator jGen, SerializerProvider bread) throws IOException {
         jGen.writeStartObject();
         jGen.writeStringField("information", data.message());
+        jGen.writeStringField("date", data.date());
         jGen.writeArrayFieldStart("substitutions");
 
         for (PlanData.Row substitution : data.substitutions()) {

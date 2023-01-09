@@ -60,6 +60,8 @@ function getPlans() {
                 if (!isBlank(info)) document.getElementById("message-today").innerText = info;
                 else document.getElementById("message-today").innerText = "Keine Mitteilungen";
 
+                displayDate(true, j["date"]);
+
                 const table = document.getElementById("table-today");
                 j["substitutions"].forEach(s => {
                     document.getElementById("no-subs-today").hidden = true;
@@ -77,6 +79,8 @@ function getPlans() {
                 const info = j["information"];
                 if (!isBlank(info)) document.getElementById("message-tomorrow").innerText = info;
                 else document.getElementById("message-tomorrow").innerText = "Keine Mitteilungen";
+
+                displayDate(false, j["date"]);
 
                 const table = document.getElementById("table-tomorrow");
                 j["substitutions"].forEach(s => {
@@ -105,6 +109,13 @@ function getPlans() {
                 onLoadEnd();
             });
         });
+    }
+}
+
+function displayDate(today, date) {
+    const dates = document.getElementsByClassName(today ? "date-today" : "date-tomorrow");
+    for (let i = 0; i < dates.length; i++) {
+        dates.item(i).innerText = date;
     }
 }
 

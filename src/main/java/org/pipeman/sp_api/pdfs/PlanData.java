@@ -2,6 +2,7 @@ package org.pipeman.sp_api.pdfs;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.spire.pdf.PdfDocument;
+import com.spire.pdf.PdfPageBase;
 import com.spire.pdf.utilities.PdfTable;
 import com.spire.pdf.utilities.PdfTableExtractor;
 
@@ -10,13 +11,15 @@ import java.util.regex.Pattern;
 
 @JsonSerialize(using = PdfDataSerializer.class)
 public class PlanData {
+    private static final Pattern MESSAGE_END = Pattern.compile("Klasse\\s+Std\\s+Vertretung\\s+Lehrer\\s+Raum\\s+");
     private final String message;
     private final Row[] substitutions;
-    private static final Pattern MESSAGE_END = Pattern.compile("Klasse\\s+Std\\s+Vertretung\\s+Lehrer\\s+Raum\\s+");
+    private final String date;
 
-    private PlanData(String message, Row[] substitutions) {
+    private PlanData(String message, Row[] substitutions, String date) {
         this.message = message;
         this.substitutions = substitutions;
+        this.date = date;
     }
 
     public static PlanData from(PdfDocument pdf) {
@@ -33,7 +36,12 @@ public class PlanData {
             }
         }
 
-        String[] lines = pdf.getPages().get(0).extractText(new Rectangle2D.Float(0, 140, 1000, 1000)).split("\n");
+        PdfPageBase page = pdf.getPages().get(0);
+
+        String dateText = page.extractText(new Rectangle2D.Float(0, 90, 1000, 10));
+        String date = dateText.substring(dateText.lastIndexOf(", ") + 2).strip();
+
+        String[] lines = page.extractText(new Rectangle2D.Float(0, 140, 1000, 1000)).split("\n");
         StringBuilder output = new StringBuilder();
         if (lines.length > 2)
             for (int i = 2; i < lines.length; i++) {
@@ -42,7 +50,7 @@ public class PlanData {
                 if (i > 2) output.append('\n');
                 output.append(line);
             }
-        return new PlanData(output.toString(), substitutions);
+        return new PlanData(output.toString(), substitutions, date);
     }
 
     public Row[] substitutions() {
@@ -51,6 +59,10 @@ public class PlanData {
 
     public String message() {
         return message;
+    }
+
+    public String date() {
+        return date;
     }
 
     public record Row(String clazz, String lesson, String substitution, String teacher, String room, String other) {

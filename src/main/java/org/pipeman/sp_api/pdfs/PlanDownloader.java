@@ -27,7 +27,7 @@ public class PlanDownloader {
     private long lastLogin = 0;
     private final Object loginLock = new Object();
 
-    private byte[] getPlan(boolean today, Config config) {
+    private byte[] getPlan(Day day, Config config) {
         try {
             synchronized (loginLock) {
                 if (lastLogin < System.currentTimeMillis() - 600_000) {
@@ -36,10 +36,10 @@ public class PlanDownloader {
                 }
             }
 
-            String fileUrl = "/LearningToolElement/ViewLearningToolElement.aspx?LearningToolElementId="
-                             + (today ? config.ilTodayPlanId : config.ilTomorrowPlanId);
+            String fileUrl = config.ilUrl + "/LearningToolElement/ViewLearningToolElement.aspx?LearningToolElementId="
+                             + (day == Day.TODAY ? config.ilTodayPlanId : config.ilTomorrowPlanId);
 
-            HttpResponse<String> response = ilaw.getHttpClient().send(Utils.createRequest(config.ilUrl + fileUrl), HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = ilaw.getHttpClient().send(Utils.createRequest(fileUrl), HttpResponse.BodyHandlers.ofString());
             String url = Jsoup.parse(response.body()).getElementById("ctl00_ContentPlaceHolder_ExtensionIframe").attr("src");
 
             Document doc = Jsoup.parse(Utils.getLast(Utils.followRedirects(url, ilaw.getHttpClient())).body());
@@ -55,25 +55,26 @@ public class PlanDownloader {
         }
     }
 
-    private void refreshCache(boolean today, DayData data) {
+    private DayData refreshCache(Day day) {
+        DayData data = day == Day.TODAY ? todayData : tomorrowData;
         synchronized (data.lock()) {
-            if (data.lastUpdate() < System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) {
-                long start = System.nanoTime();
-                byte[] rawData = getPlan(today, Main.conf());
-                LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
-                start = System.nanoTime();
+            if (data.lastUpdate() >= System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) return data;
 
-                PdfDocument document = new PdfDocument(rawData);
+            long start = System.nanoTime();
+            byte[] rawData = getPlan(day, Main.conf());
+            LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
+            start = System.nanoTime();
 
-                data.html(convertPdfToHtml(document));
-                data.data(PlanData.from(document));
-                data.pdf(rawData);
-                data.image(convertPdfToImage(document));
+            PdfDocument document = new PdfDocument(rawData);
+            data.html(convertPdfToHtml(document));
+            data.data(PlanData.from(document));
+            data.pdf(rawData);
+            data.image(convertPdfToImage(document));
 
-                LOGGER.info("Took {}ms to convert plan", (System.nanoTime() - start) / 1_000_000);
+            LOGGER.info("Took {}ms to convert plan", (System.nanoTime() - start) / 1_000_000);
 
-                data.lastUpdate(System.currentTimeMillis());
-            }
+            data.lastUpdate(System.currentTimeMillis());
+            return data;
         }
     }
 
@@ -93,13 +94,7 @@ public class PlanDownloader {
         return os.toByteArray();
     }
 
-    public DayData getTodayData() {
-        refreshCache(true, todayData);
-        return todayData;
-    }
-
-    public DayData getTomorrowData() {
-        refreshCache(false, tomorrowData);
-        return tomorrowData;
+    public DayData getData(Day day) {
+        return refreshCache(day);
     }
 }

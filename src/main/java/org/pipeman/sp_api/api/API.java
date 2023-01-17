@@ -2,6 +2,7 @@ package org.pipeman.sp_api.api;
 
 import io.javalin.http.Context;
 import io.javalin.http.Header;
+import org.pipeman.sp_api.pdfs.Day;
 import org.pipeman.sp_api.pdfs.DayData;
 import org.pipeman.sp_api.pdfs.PlanDownloader;
 
@@ -11,11 +12,11 @@ public class API {
     private static final PlanDownloader DOWNLOADER = new PlanDownloader();
 
     public static void getPlanToday(Context ctx) {
-        sendData(ctx, DOWNLOADER::getTodayData);
+        sendData(ctx, () -> DOWNLOADER.getData(Day.TODAY));
     }
 
     public static void getPlanTomorrow(Context ctx) {
-        sendData(ctx, DOWNLOADER::getTomorrowData);
+        sendData(ctx, () -> DOWNLOADER.getData(Day.TOMORROW));
     }
 
     private static void sendData(Context ctx, Supplier<DayData> dataSupplier) {

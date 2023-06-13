@@ -1,54 +1,64 @@
 package org.pipeman.sp_api.pdfs;
 
+import com.spire.pdf.FileFormat;
+import com.spire.pdf.PdfDocument;
+import org.pipeman.sp_api.LazyInitializer;
+import org.pipeman.sp_api.Main;
+
+import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 public class DayData {
-    private final Object lock = new Object();
-    private long lastUpdate = 0;
-    private String html = "";
-    private PlanData data = null;
-    private byte[] image = new byte[0];
-    private byte[] pdf = new byte[0];
+    private final long creationTime;
+    private final LazyInitializer<String> html;
+    private final LazyInitializer<PlanData> data;
+    private final LazyInitializer<byte[]> image;
+    private final byte[] pdf;
 
-    public Object lock() {
-        return lock;
+    public DayData(byte[] data) {
+        this.creationTime = System.currentTimeMillis();
+        this.pdf = data;
+        PdfDocument document = new PdfDocument(data);
+        this.html = new LazyInitializer<>(() -> convertToHtml(document));
+        this.data = new LazyInitializer<>(() -> PlanData.from(document));
+        this.image = new LazyInitializer<>(() -> convertToImage(document));
     }
 
-    public long lastUpdate() {
-        return lastUpdate;
-    }
-
-    public void lastUpdate(long newValue) {
-        lastUpdate = newValue;
+    public long creationTime() {
+        return creationTime;
     }
 
     public String html() {
-        return html;
-    }
-
-    public void html(String newValue) {
-        html = newValue;
+        return html.get();
     }
 
     public PlanData data() {
-        return data;
-    }
-
-    public void data(PlanData newValue) {
-        data = newValue;
+        return data.get();
     }
 
     public byte[] image() {
-        return image;
-    }
-
-    public void image(byte[] newValue) {
-        this.image = newValue;
+        return image.get();
     }
 
     public byte[] pdf() {
         return pdf;
     }
 
-    public void pdf(byte[] newValue) {
-        this.pdf = newValue;
+    private String convertToHtml(PdfDocument document) {
+        OutputStream output = new ByteArrayOutputStream();
+        document.saveToStream(output, FileFormat.HTML);
+        return output.toString().replace(Main.SPIRE_WARNING, "");
+    }
+
+    private byte[] convertToImage(PdfDocument pdf) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(pdf.saveAsImage(0), "png", os);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return os.toByteArray();
     }
 }

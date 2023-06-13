@@ -24,22 +24,18 @@ public class ILAWImpl implements ILAW {
     ILAWImpl(String url, String username, String password) throws URISyntaxException, IOException, InterruptedException, LoginException {
         long start = System.nanoTime();
         this.url = url;
-        URI indexURI = URI.create(url + "/Index.aspx");
 
-        HttpRequest request = HttpRequest.newBuilder().uri(indexURI).build();
-        HttpRequest request2 = HttpRequest.newBuilder()
-                .uri(indexURI)
+        HttpRequest postRequest = HttpRequest.newBuilder()
+                .uri(URI.create(url + "/Index.aspx"))
                 .setHeader("Content-Type", "application/x-www-form-urlencoded")
                 .POST(HttpRequest.BodyPublishers.ofString(getLoginBody(username, password)))
                 .build();
 
-        HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.discarding());
-
-        HttpResponse<Void> response2 = HTTP_CLIENT.send(request2, HttpResponse.BodyHandlers.discarding());
+        HttpResponse<Void> response2 = HTTP_CLIENT.send(postRequest, HttpResponse.BodyHandlers.discarding());
         if (response2.statusCode() == 200) {
             throw new LoginException();
         }
-        doRequestWithRedirect(url, response2);
+//        doRequestWithRedirect(url, response2);
 
         LOGGER.info("Itslearning login successful! Took " + (System.nanoTime() - start) / 1_000_000 + "ms");
     }

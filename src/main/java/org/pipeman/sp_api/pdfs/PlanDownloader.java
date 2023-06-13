@@ -1,7 +1,5 @@
 package org.pipeman.sp_api.pdfs;
 
-import com.spire.pdf.FileFormat;
-import com.spire.pdf.PdfDocument;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.pipeman.ilaw.ILAW;
@@ -11,17 +9,13 @@ import org.pipeman.sp_api.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PlanDownloader {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanDownloader.class);
-
-    private final DayData todayData = new DayData();
-    private final DayData tomorrowData = new DayData();
+    private final Map<Day, DayData> data = new HashMap<>();
 
     private ILAW ilaw;
     private long lastLogin = 0;
@@ -50,48 +44,28 @@ public class PlanDownloader {
             int start = oneDriveBody.indexOf("\"downloadUrl\":\"") + 15;
             return ilaw.getHttpClient().send(Utils.createRequest(oneDriveBody.substring(start, oneDriveBody.indexOf('"', start))), HttpResponse.BodyHandlers.ofByteArray()).body();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to get plan", e);
             throw new RuntimeException(e);
         }
     }
 
     private DayData refreshCache(Day day) {
-        DayData data = day == Day.TODAY ? todayData : tomorrowData;
-        synchronized (data.lock()) {
-            if (data.lastUpdate() >= System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L) return data;
+        DayData data = this.data.get(day);
+        synchronized (day.lock()) {
+            if (data != null && hasNotExpired(data)) return data;
 
             long start = System.nanoTime();
             byte[] rawData = getPlan(day, Main.conf());
+            data = new DayData(rawData);
             LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
-            start = System.nanoTime();
 
-            PdfDocument document = new PdfDocument(rawData);
-            data.html(convertPdfToHtml(document));
-            data.data(PlanData.from(document));
-            data.pdf(rawData);
-            data.image(convertPdfToImage(document));
-
-            LOGGER.info("Took {}ms to convert plan", (System.nanoTime() - start) / 1_000_000);
-
-            data.lastUpdate(System.currentTimeMillis());
+            this.data.put(day, data);
             return data;
         }
     }
 
-    private String convertPdfToHtml(PdfDocument pdf) {
-        OutputStream output = new ByteArrayOutputStream();
-        pdf.saveToStream(output, FileFormat.HTML);
-        return output.toString().replace(Main.SPIRE_WARNING, "");
-    }
-
-    private byte[] convertPdfToImage(PdfDocument pdf) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(pdf.saveAsImage(0), "png", os);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return os.toByteArray();
+    private static boolean hasNotExpired(DayData data) {
+        return data.creationTime() >= System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L;
     }
 
     public DayData getData(Day day) {

@@ -29,7 +29,7 @@ public class PlanData {
             PdfTable table = tables[0];
             substitutions = new Row[table.getRowCount() - 1];
 
-            if (substitutions.length > 1) {
+            if (substitutions.length >= 1) {
                 for (int i = 1; i <= substitutions.length; i++) {
                     substitutions[i - 1] = Row.extractFromTable(i, table);
                 }

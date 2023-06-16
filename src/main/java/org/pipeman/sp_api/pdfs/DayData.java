@@ -2,6 +2,7 @@ package org.pipeman.sp_api.pdfs;
 
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
+import org.pipeman.sp_api.Config;
 import org.pipeman.sp_api.LazyInitializer;
 import org.pipeman.sp_api.Main;
 
@@ -9,6 +10,8 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class DayData {
     private final long creationTime;
@@ -16,14 +19,15 @@ public class DayData {
     private final LazyInitializer<PlanData> data;
     private final LazyInitializer<byte[]> image;
     private final byte[] pdf;
+    private final PdfDocument document;
 
     public DayData(byte[] data) {
         this.creationTime = System.currentTimeMillis();
         this.pdf = data;
-        PdfDocument document = new PdfDocument(data);
-        this.html = new LazyInitializer<>(() -> convertToHtml(document));
-        this.data = new LazyInitializer<>(() -> PlanData.from(document));
-        this.image = new LazyInitializer<>(() -> convertToImage(document));
+        this.document = new PdfDocument(data);
+        this.html = new LazyInitializer<>(() -> runWithPdfDocument(this::convertToHtml));
+        this.data = new LazyInitializer<>(() -> runWithPdfDocument(PlanData::from));
+        this.image = new LazyInitializer<>(() -> runWithPdfDocument(this::convertToImage));
     }
 
     public long creationTime() {
@@ -60,5 +64,9 @@ public class DayData {
             throw new RuntimeException(e);
         }
         return os.toByteArray();
+    }
+
+    private synchronized <T> T runWithPdfDocument(Function<PdfDocument, T> action) {
+        return action.apply(document);
     }
 }

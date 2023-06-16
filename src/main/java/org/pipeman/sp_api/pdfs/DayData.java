@@ -2,7 +2,6 @@ package org.pipeman.sp_api.pdfs;
 
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
-import org.pipeman.sp_api.Config;
 import org.pipeman.sp_api.LazyInitializer;
 import org.pipeman.sp_api.Main;
 
@@ -10,7 +9,6 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class DayData {

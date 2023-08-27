@@ -8,11 +8,11 @@ import org.pipeman.pconf.ConfigProvider;
 import org.pipeman.sp_api.api.API;
 import org.pipeman.sp_api.pdfs.PdfDataSerializer;
 import org.pipeman.sp_api.pdfs.PlanData;
+import org.pipeman.notifications.SubscriptionApi;
 
 import java.nio.file.Files;
 
-import static io.javalin.apibuilder.ApiBuilder.get;
-import static io.javalin.apibuilder.ApiBuilder.path;
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class Main {
     public static final ConfigProvider<Config> CONFIG = ConfigProvider.of("config.properties", Config::new);
@@ -33,8 +33,17 @@ public class Main {
             get("", ctx -> ctx.html(Files.readString(conf().indexPath)));
 
             path("api", () -> {
-                get("plans/today", API::getPlanToday);
-                get("plans/tomorrow", API::getPlanTomorrow);
+                path("plans", () -> {
+                    get("today", API::getPlanToday);
+                    get("tomorrow", API::getPlanTomorrow);
+                });
+
+                path("subscriptions", () -> {
+                    get("{endpoint}", SubscriptionApi::getSubscriber);
+                    put("", SubscriptionApi::putSubscriber);
+                    patch("{endpoint}", SubscriptionApi::patchSubscriber);
+                    delete("{endpoint}", SubscriptionApi::deleteSubscriber);
+                });
             });
         });
 

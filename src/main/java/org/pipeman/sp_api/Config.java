@@ -13,6 +13,9 @@ public class Config extends AbstractConfig {
     public final String ilTodayPlanId = this.get("its-learning-today-plan-id", "");
     public final String ilTomorrowPlanId = this.get("its-learning-tomorrow-plan-id", "");
     public final int planCacheLifetime = this.get("plan-cache-lifetime", 300);
+    public final String vapidPublicKey = this.get("vapid-public-key", "");
+    public final String vapidPrivateKey = this.get("vapid-private-key", "");
+    public final String vapidSubject = this.get("vapid-subject", "");
 
     public Config(String file) {
         super(file);

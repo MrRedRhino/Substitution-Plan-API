@@ -1,4 +1,4 @@
-package org.pipeman.notifications;
+package org.pipeman.sp_api.notifications;
 
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;

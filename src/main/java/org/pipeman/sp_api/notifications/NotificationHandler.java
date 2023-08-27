@@ -1,4 +1,4 @@
-package org.pipeman.notifications;
+package org.pipeman.sp_api.notifications;
 
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;

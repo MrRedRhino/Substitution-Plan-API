@@ -1,4 +1,4 @@
-package org.pipeman.notifications;
+package org.pipeman.sp_api.notifications;
 
 import nl.martijndwars.webpush.Subscription;
 import nl.martijndwars.webpush.Subscription.Keys;

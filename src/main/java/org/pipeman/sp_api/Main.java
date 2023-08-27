@@ -8,7 +8,7 @@ import org.pipeman.pconf.ConfigProvider;
 import org.pipeman.sp_api.api.API;
 import org.pipeman.sp_api.pdfs.PdfDataSerializer;
 import org.pipeman.sp_api.pdfs.PlanData;
-import org.pipeman.notifications.SubscriptionApi;
+import org.pipeman.sp_api.notifications.SubscriptionApi;
 
 import java.nio.file.Files;
 

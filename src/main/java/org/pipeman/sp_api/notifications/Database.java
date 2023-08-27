@@ -1,4 +1,4 @@
-package org.pipeman.notifications;
+package org.pipeman.sp_api.notifications;
 
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBIterator;

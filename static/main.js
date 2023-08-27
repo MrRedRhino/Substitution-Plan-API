@@ -2,42 +2,59 @@ let todayReady = false;
 let tomorrowReady = false;
 let tables;
 let lightMode;
-const moon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class=""><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
-const sun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class=""><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
 
 const delay = setTimeout(() => {
     setLoading(true);
 }, 100);
 
 function loadSettings() {
-    const settings = parseInt(localStorage.getItem("settings"));
-    if (isNaN(settings)) {
+    const settings = JSON.parse(localStorage.getItem("settings"));
+    if (settings == null) {
         lightMode = true;
         tables = false;
     } else {
-        lightMode = Boolean(settings & 1);
-        tables = Boolean(settings & 2);
+        lightMode = settings["light-mode"];
+        tables = settings["table-view"];
     }
     saveSettings();
 }
 
 function saveSettings() {
-    localStorage.setItem("settings", ((lightMode ? 1 : 0) | (tables ? 2 : 0)).toString());
+    const settings = {
+        "light-mode": lightMode,
+        "table-view": tables
+    }
+    document.getElementById("table-view-toggle").checked = tables;
+    document.getElementById("theme-toggle").checked = !lightMode;
+    localStorage.setItem("settings", JSON.stringify(settings));
 }
 
 function isBlank(string) {
     return string == null || string.trim() === '';
 }
 
+function closeSettings() {
+    document.getElementById("settings-main").classList.remove("enabled");
+}
+
+function openSettings() {
+    document.getElementById("settings-main").classList.add("enabled");
+    document.getElementById("notifications-settings").hidden = true;
+    load().then(enabled => {
+        document.getElementById("notification-toggle").checked = enabled;
+        document.getElementById("filter").value = filter;
+        document.getElementById("notifications-settings").hidden = false;
+    })
+}
+
 function toggleTheme() {
-    lightMode = !lightMode;
+    lightMode = !document.getElementById("theme-toggle").checked;
     setTheme(lightMode);
     saveSettings();
 }
 
 function setTheme() {
     document.getElementById("theme-css").href = lightMode ? "default.css" : "dark.css";
-    document.getElementById("theme-button").innerHTML = lightMode ? moon : sun;
 }
 
 function setLoading(loading) {
@@ -150,7 +167,7 @@ function addTableRow(table, clazz, lesson, substitution, teacher, room, other) {
 }
 
 function toggleTable() {
-    tables = !tables;
+    tables = document.getElementById("table-view-toggle").checked;
     saveSettings();
     location.reload();
 }

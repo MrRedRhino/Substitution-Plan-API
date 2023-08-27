@@ -15,6 +15,7 @@ public class NotificationHandler {
     private static final PushService service;
 
     static {
+        Security.addProvider(new BouncyCastleProvider());
         try {
             service = new PushService(
                     Main.conf().vapidPublicKey,
@@ -24,7 +25,6 @@ public class NotificationHandler {
         } catch (GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
-        Security.addProvider(new BouncyCastleProvider());
     }
 
     public static void sendNotification(Subscriber subscriber, String message) throws JoseException, GeneralSecurityException, IOException, ExecutionException, InterruptedException {

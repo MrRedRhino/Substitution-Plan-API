@@ -7,11 +7,34 @@ import org.iq80.leveldb.impl.Iq80DBFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class Database {
-    private static final DB database = createDB();
+    private static final DB database;
+
+    static {
+        Options options = new Options()
+                .createIfMissing(true)
+                .cacheSize(8 * 1024 * 1024);
+
+        try {
+            database = Iq80DBFactory.factory.open(new File("subscribers"), options);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create database", e);
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                database.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }));
+    }
 
     public static Optional<Subscriber> getSubscriber(String endpoint) {
         byte[] bytes = database.get(endpoint.getBytes());
@@ -45,15 +68,9 @@ public class Database {
         }
     }
 
-    private static DB createDB() {
-        Options options = new Options()
-                .createIfMissing(true)
-                .cacheSize(8 * 1024 * 1024);
-
-        try {
-            return Iq80DBFactory.factory.open(new File("subscribers"), options);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create database", e);
-        }
+    public static List<Subscriber> getSubscribers() {
+        List<Subscriber> list = new ArrayList<>();
+        forEachSubscriber(list::add);
+        return Collections.unmodifiableList(list);
     }
 }

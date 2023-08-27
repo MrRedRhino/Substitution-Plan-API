@@ -30,7 +30,10 @@ public class Subscriber {
     }
 
     public JSONObject toJson() {
-        return new JSONObject();
+        return new JSONObject()
+                .put("filter", filterAsString())
+                .put("key", subscription.keys.p256dh)
+                .put("auth", subscription.keys.auth);
     }
 
     public void setFilter(List<String> newFilter) {
@@ -43,5 +46,9 @@ public class Subscriber {
 
     public Subscription subscription() {
         return subscription;
+    }
+
+    public String filterAsString() {
+        return String.join(",", filter);
     }
 }

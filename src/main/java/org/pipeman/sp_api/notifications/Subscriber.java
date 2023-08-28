@@ -4,10 +4,12 @@ import nl.martijndwars.webpush.Subscription;
 import nl.martijndwars.webpush.Subscription.Keys;
 import org.json.JSONObject;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Subscriber {
-    private List<String> filter;
+    private Set<String> filter;
     private final Subscription subscription;
 
     public Subscriber(String endpoint, String string) {
@@ -15,8 +17,7 @@ public class Subscriber {
     }
 
     public Subscriber(String endpoint, JSONObject object) {
-        filter = List.of(object.getString("filter").split(","));
-
+        filter = new HashSet<>(List.of(object.getString("filter").split(",")));
         Keys keys = new Keys(
                 object.getString("key"),
                 object.getString("auth")
@@ -25,7 +26,7 @@ public class Subscriber {
     }
 
     public Subscriber(Keys keys, String endpoint) {
-        this.filter = List.of();
+        this.filter = Set.of();
         this.subscription = new Subscription(endpoint, keys);
     }
 
@@ -36,11 +37,11 @@ public class Subscriber {
                 .put("auth", subscription.keys.auth);
     }
 
-    public void setFilter(List<String> newFilter) {
+    public void setFilter(Set<String> newFilter) {
         this.filter = newFilter;
     }
 
-    public List<String> filter() {
+    public Set<String> filter() {
         return filter;
     }
 

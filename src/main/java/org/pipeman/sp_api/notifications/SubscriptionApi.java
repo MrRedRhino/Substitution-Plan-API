@@ -3,14 +3,11 @@ package org.pipeman.sp_api.notifications;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import nl.martijndwars.webpush.Subscription.Keys;
-import org.jose4j.lang.JoseException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class SubscriptionApi {
     public static void getSubscriber(Context ctx) {
@@ -34,11 +31,6 @@ public class SubscriptionApi {
 
         Subscriber subscriber = new Subscriber(new Keys(key, auth), endpoint);
         Database.putSubscriber(endpoint, subscriber);
-        try {
-            NotificationHandler.sendNotification(subscriber, "yoooo");
-        } catch (JoseException | GeneralSecurityException | IOException | ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static void patchSubscriber(Context ctx) {
@@ -50,7 +42,7 @@ public class SubscriptionApi {
         Subscriber subscriber = Database.getSubscriber(endpoint)
                 .orElseThrow(() -> new BadRequestResponse("Subscription not found"));
 
-        subscriber.setFilter(filter);
+        subscriber.setFilter(new HashSet<>(filter));
         Database.putSubscriber(endpoint, subscriber);
     }
 

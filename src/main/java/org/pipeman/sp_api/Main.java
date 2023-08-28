@@ -6,9 +6,9 @@ import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JavalinJackson;
 import org.pipeman.pconf.ConfigProvider;
 import org.pipeman.sp_api.api.API;
+import org.pipeman.sp_api.notifications.SubscriptionApi;
 import org.pipeman.sp_api.pdfs.PdfDataSerializer;
 import org.pipeman.sp_api.pdfs.PlanData;
-import org.pipeman.sp_api.notifications.SubscriptionApi;
 
 import java.nio.file.Files;
 
@@ -50,6 +50,7 @@ public class Main {
         SimpleModule module = new SimpleModule();
         module.addSerializer(PlanData.class, new PdfDataSerializer());
         JavalinJackson.Companion.defaultMapper().registerModule(module);
+        // TODO add automatic update checking
     }
 
     public static Config conf() {

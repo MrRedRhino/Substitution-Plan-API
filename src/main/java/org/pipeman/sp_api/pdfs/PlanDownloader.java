@@ -6,6 +6,7 @@ import org.pipeman.ilaw.ILAW;
 import org.pipeman.ilaw.Utils;
 import org.pipeman.sp_api.Config;
 import org.pipeman.sp_api.Main;
+import org.pipeman.sp_api.notifications.NotificationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 public class PlanDownloader {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanDownloader.class);
     private final Map<Day, DayData> data = new HashMap<>();
+    private final Map<Day, DayData> previousData = new HashMap<>();
 
     private ILAW ilaw;
     private long lastLogin = 0;
@@ -59,13 +61,22 @@ public class PlanDownloader {
             data = new DayData(rawData);
             LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
 
+            DayData previousPlan = previousData.get(day);
+            if (previousPlan != null && !previousPlan.equals(data)) {
+                planChanged(day, data);
+            }
             this.data.put(day, data);
+            this.previousData.put(day, data);
             return data;
         }
     }
 
     private static boolean hasNotExpired(DayData data) {
         return data.creationTime() >= System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L;
+    }
+
+    private static void planChanged(Day day, DayData data) {
+        NotificationHandler.handlePlanUpdate(day, data);
     }
 
     public DayData getData(Day day) {

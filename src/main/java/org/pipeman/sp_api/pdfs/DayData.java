@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.function.Function;
 
 public class DayData {
@@ -66,5 +67,21 @@ public class DayData {
 
     private synchronized <T> T runWithPdfDocument(Function<PdfDocument, T> action) {
         return action.apply(document);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DayData dayData = (DayData) o;
+        if (creationTime != dayData.creationTime) return false;
+        return Arrays.equals(pdf, dayData.pdf);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (creationTime ^ (creationTime >>> 32));
+        result = 31 * result + Arrays.hashCode(pdf);
+        return result;
     }
 }

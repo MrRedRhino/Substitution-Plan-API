@@ -2,11 +2,15 @@ package org.pipeman.ilaw;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 public class Utils {
     public static List<HttpResponse<String>> followRedirects(String url, HttpClient client) throws IOException, InterruptedException {
@@ -55,5 +59,20 @@ public class Utils {
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .build();
+    }
+
+    public static <R, K, V> List<R> map(Map<K, V> map, BiFunction<K, V, R> mapper) {
+        List<R> out = new ArrayList<>(map.size());
+        map.forEach((k, v) -> out.add(mapper.apply(k ,v)));
+        return out;
+    }
+
+    public static String writeFormBody(Map<String, String> entries) {
+        List<String> list = map(entries, (k, v) -> {
+            String encodedK = URLEncoder.encode(k, Charset.defaultCharset());
+            String encodedV = URLEncoder.encode(v, Charset.defaultCharset());
+            return encodedK + "=" + encodedV;
+        });
+        return String.join("&", list);
     }
 }

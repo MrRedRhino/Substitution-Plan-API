@@ -1,0 +1,237 @@
+* {
+    font-family: Arial, serif;
+    transition: background-color 0.1s;
+}
+
+.loading-text {
+    color: var(--text-color);
+}
+
+body {
+    background-color: var(--background-color);
+    /*darkslategrey*/
+    background-image: url("https://pipeman.org/pipe.svg");
+    background-size: 30px;
+}
+
+.plan-div {
+    transform: translate(-40px, -20px) scale(0.8);
+    transform-origin: 0 0;
+}
+
+.tomorrow {
+    transform: translate(-250px, -20px) scale(0.8);
+    transform-origin: 0 0
+}
+
+/*THIS IS USED*/
+.plan-div-no-translate {
+    transform: translate(-120px, -40px) scale(0.8);
+    transform-origin: 0 0;
+}
+
+/*THIS IS USED*/
+.tomorrow-no-translate {
+    transform: translate(-120px, -320px) scale(0.8);
+    transform-origin: 0 0
+}
+
+.header {
+    text-align: left;
+    color: var(--header-color);
+    font-size: 25px;
+}
+
+#sp-div {
+    display: flex;
+    width: 1000px;
+    flex-direction: row;
+    align-items: center
+}
+
+.theme-button {
+    line-height: 0;
+    height: 37px;
+    width: 37px;
+    font-size: 5px;
+    border-radius: 50%;
+    background-color: var(--header-color);
+    cursor: pointer;
+    border: none;
+    align-self: center;
+}
+
+.no-pointer {
+    pointer-events: none;
+}
+
+.header-wrapper {
+    display: flex;
+    gap: 1rem;
+}
+
+.backdrop {
+    padding-left: 15px;
+    padding-bottom: 3px;
+    background-color: var(--header-background);
+    border-radius: 20px;
+    max-width: 1140px;
+}
+
+h3 {
+    padding-top: 15px;
+    margin-bottom: 0;
+}
+
+h4 {
+    font-size: 20px;
+    color: var(--text-color);
+    margin-top: 13px;
+    font-weight: normal;
+}
+
+.substitution-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table-wrapper {
+    padding: 15px 15px 15px 0;
+}
+
+tr, td, th {
+    border: 2px solid var(--table-line);
+    padding: 8px;
+    color: var(--text-color);
+}
+
+.settings {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    background: var(--header-background);
+    width: 300px;
+    height: 100%;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    padding: 10px;
+    transform: translateX(-320px);
+    transition: 0.2s;
+}
+
+.settings.enabled {
+    transform: none;
+}
+
+.settings h2 {
+    color: var(--text-color);
+    margin: 6px 4px 4px;
+}
+
+.settings h3 {
+    font-weight: normal;
+    font-size: 15px;
+    color: var(--text-color);
+    padding-top: 0;
+    margin-top: 0;
+    margin-left: 6px;
+    margin-bottom: 5px;
+}
+
+.settings textarea {
+    width: 100%;
+    height: 40px;
+    font-size: 15px;
+    resize: none;
+    border: none;
+    color: var(--text-color);
+    background: var(--background-color);
+}
+
+.settings .flex {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.settings .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.settings hr {
+    border-color: var(--text-color);
+}
+
+.settings .theme-button {
+    background: none;
+    margin-top: 4px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--background-color);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--header-color);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--header-color);
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(24px);
+    -ms-transform: translateX(24px);
+    transform: translateX(24px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 32px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.setting-name {
+    font-weight: normal;
+    font-size: 18px;
+}

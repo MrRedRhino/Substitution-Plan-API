@@ -4,7 +4,7 @@ function receivePushNotification(event) {
 
     const options = {
         body: notificationText,
-        icon: "https://spyna.it/icons/favicon.ico",
+        icon: "https://pipeman.org/favicon.ico",
         vibrate: [500]
     };
 

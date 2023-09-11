@@ -79,7 +79,7 @@ public class NotificationHandler {
 
     private static String createMessage(Day day, int entries) {
         if (entries == 1) {
-            return "Der %s Vertretungsplan enthält 1 Eintrag, der Dich betrifft."
+            return "Der %s Vertretungsplan enthält einen Eintrag, der Dich betrifft."
                     .formatted(day.localization());
         } else {
             return "Der %s Vertretungsplan enthält %s Einträge, die Dich betreffen."

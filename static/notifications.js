@@ -15,7 +15,7 @@ function filterEdited() {
 }
 
 function uploadFilter() {
-    fetch("api/subscriptions/" + endpoint, {
+    fetch("api/subscriptions/?endpoint=" + endpoint, {
         method: "PATCH",
         body: filter
     }).then();
@@ -39,7 +39,7 @@ async function load() {
     }
 
     endpoint = encodeURIComponent(subscription.endpoint);
-    const response = await fetch("api/subscriptions/" + endpoint);
+    const response = await fetch("api/subscriptions/?endpoint=" + endpoint);
     if (response.status === 200) {
         return await response.text().then(text => {
             filter = text;
@@ -70,7 +70,7 @@ function disable() {
     navigator.serviceWorker.ready.then(serviceWorker => {
         serviceWorker.pushManager.getSubscription().then(subscription => {
             const endpoint = encodeURIComponent(subscription.endpoint);
-            fetch("api/subscriptions/" + endpoint, {
+            fetch("api/subscriptions/?endpoint=" + endpoint, {
                 method: "DELETE"
             }).then(() => {
                 subscription.unsubscribe().then();

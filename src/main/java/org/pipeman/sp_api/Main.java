@@ -39,10 +39,10 @@ public class Main {
                 });
 
                 path("subscriptions", () -> {
-                    get("{endpoint}", SubscriptionApi::getSubscriber);
+                    get(SubscriptionApi::getSubscriber);
                     put("", SubscriptionApi::putSubscriber);
-                    patch("{endpoint}", SubscriptionApi::patchSubscriber);
-                    delete("{endpoint}", SubscriptionApi::deleteSubscriber);
+                    patch(SubscriptionApi::patchSubscriber);
+                    delete(SubscriptionApi::deleteSubscriber);
                 });
             });
         });

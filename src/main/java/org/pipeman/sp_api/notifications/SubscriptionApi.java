@@ -63,7 +63,9 @@ public class SubscriptionApi {
     }
 
     private static String getEndpoint(Context ctx) {
-        return ctx.pathParam("endpoint").strip();
+        String param = ctx.queryParam("endpoint");
+        if (param == null) throw new BadRequestResponse("Query parameter 'endpoint' missing");
+        return param.strip();
     }
 
     private static List<String> list(String[] array) {

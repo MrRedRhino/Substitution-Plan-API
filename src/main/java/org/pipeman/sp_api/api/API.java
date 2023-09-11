@@ -2,6 +2,7 @@ package org.pipeman.sp_api.api;
 
 import io.javalin.http.Context;
 import io.javalin.http.Header;
+import org.pipeman.sp_api.AutoFetch;
 import org.pipeman.sp_api.pdfs.Day;
 import org.pipeman.sp_api.pdfs.DayData;
 import org.pipeman.sp_api.pdfs.PlanDownloader;
@@ -10,6 +11,10 @@ import java.util.function.Supplier;
 
 public class API {
     private static final PlanDownloader DOWNLOADER = new PlanDownloader();
+
+    static {
+        AutoFetch.start(DOWNLOADER);
+    }
 
     public static void getPlanToday(Context ctx) {
         sendData(ctx, () -> DOWNLOADER.getData(Day.TODAY));

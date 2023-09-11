@@ -4,8 +4,6 @@ import nl.martijndwars.webpush.Subscription;
 import nl.martijndwars.webpush.Subscription.Keys;
 import org.json.JSONObject;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Subscriber {
@@ -17,7 +15,8 @@ public class Subscriber {
     }
 
     public Subscriber(String endpoint, JSONObject object) {
-        filter = new HashSet<>(List.of(object.getString("filter").split(",")));
+        String filterString = object.getString("filter");
+        filter = filterString.isEmpty() ? Set.of() : Set.of(filterString.split(","));
         Keys keys = new Keys(
                 object.getString("key"),
                 object.getString("auth")

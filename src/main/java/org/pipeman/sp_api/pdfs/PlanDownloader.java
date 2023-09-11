@@ -52,8 +52,8 @@ public class PlanDownloader {
     }
 
     private DayData refreshCache(Day day) {
-        DayData data = this.data.get(day);
         synchronized (day.lock()) {
+            DayData data = this.data.get(day);
             if (data != null && hasNotExpired(data)) return data;
 
             long start = System.nanoTime();

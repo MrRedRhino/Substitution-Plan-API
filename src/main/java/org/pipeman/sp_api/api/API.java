@@ -7,8 +7,6 @@ import org.pipeman.sp_api.pdfs.Day;
 import org.pipeman.sp_api.pdfs.DayData;
 import org.pipeman.sp_api.pdfs.PlanDownloader;
 
-import java.util.function.Supplier;
-
 public class API {
     private static final PlanDownloader DOWNLOADER = new PlanDownloader();
 
@@ -17,14 +15,14 @@ public class API {
     }
 
     public static void getPlanToday(Context ctx) {
-        sendData(ctx, () -> DOWNLOADER.getData(Day.TODAY));
+        sendData(ctx, Day.TODAY);
     }
 
     public static void getPlanTomorrow(Context ctx) {
-        sendData(ctx, () -> DOWNLOADER.getData(Day.TOMORROW));
+        sendData(ctx, Day.TOMORROW);
     }
 
-    private static void sendData(Context ctx, Supplier<DayData> dataSupplier) {
+    private static void sendData(Context ctx, Day day) {
         String formatString = ctx.queryParam("format");
         if (formatString == null) Responses.FORMAT_REQUIRED.apply(ctx);
         else {
@@ -34,7 +32,7 @@ public class API {
                 return;
             }
 
-            DayData data = dataSupplier.get();
+            DayData data = DOWNLOADER.getData(day);
             switch (format) {
                 case HTML -> ctx.html(data.html());
                 case PDF -> ctx.result(data.pdf()).header(Header.CONTENT_TYPE, "application/pdf");

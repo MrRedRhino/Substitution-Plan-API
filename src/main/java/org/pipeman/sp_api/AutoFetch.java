@@ -2,6 +2,7 @@ package org.pipeman.sp_api;
 
 import org.pipeman.sp_api.pdfs.Day;
 import org.pipeman.sp_api.pdfs.PlanDownloader;
+import org.pipeman.sp_api.pdfs.PlanIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +21,8 @@ public class AutoFetch {
             @Override
             public void run() {
                 try {
-                    downloader.getData(Day.TODAY);
-                    downloader.getData(Day.TOMORROW);
+                    downloader.getData(new PlanIdentifier("", Day.TODAY));
+                    downloader.getData(new PlanIdentifier("", Day.TOMORROW));
                 } catch (Exception e) {
                     LOGGER.warn("Failed to auto fetch plan", e);
                 }

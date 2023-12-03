@@ -7,7 +7,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.lang.JoseException;
 import org.pipeman.sp_api.Main;
 import org.pipeman.sp_api.pdfs.Day;
-import org.pipeman.sp_api.pdfs.DayData;
+import org.pipeman.sp_api.pdfs.Plan;
 import org.pipeman.sp_api.pdfs.PlanData.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +52,9 @@ public class NotificationHandler {
         }
     }
 
-    public static void handlePlanUpdate(Day day, DayData data) {
+    public static void handlePlanUpdate(Day day, Plan plan) {
         Database.forEachSubscriber(subscriber -> {
-            List<Row> filtered = filter(subscriber.filter(), data.data().substitutions());
+            List<Row> filtered = filter(subscriber.filter(), plan.data().substitutions());
             if (filtered.isEmpty()) return;
 
             String message = createMessage(day, filtered.size());

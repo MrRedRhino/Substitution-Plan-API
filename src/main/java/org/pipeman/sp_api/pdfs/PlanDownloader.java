@@ -1,5 +1,7 @@
 package org.pipeman.sp_api.pdfs;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.pipeman.ilaw.ILAW;
@@ -11,19 +13,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PlanDownloader {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanDownloader.class);
-    private final Map<Day, DayData> data = new HashMap<>();
-    private final Map<Day, DayData> previousData = new HashMap<>();
+    private final Map<PlanIdentifier, byte[]> hashes = new HashMap<>();
+    private final LoadingCache<PlanIdentifier, Plan> cache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.of(5, ChronoUnit.MINUTES))
+            .maximumSize(10)
+            .build(this::getPlan);
 
     private ILAW ilaw;
     private long lastLogin = 0;
     private final Object loginLock = new Object();
 
-    private byte[] getPlan(Day day, Config config) {
+    private byte[] downloadPlan(PlanIdentifier plan, Config config) {
         try {
             synchronized (loginLock) {
                 if (lastLogin < System.currentTimeMillis() - 600_000) {
@@ -33,7 +41,7 @@ public class PlanDownloader {
             }
 
             String fileUrl = config.ilUrl + "/LearningToolElement/ViewLearningToolElement.aspx?LearningToolElementId="
-                             + (day == Day.TODAY ? config.ilTodayPlanId : config.ilTomorrowPlanId);
+                             + (plan.day() == Day.TODAY ? config.ilTodayPlanId : config.ilTomorrowPlanId);
 
             HttpResponse<String> response = ilaw.getHttpClient().send(Utils.createRequest(fileUrl), HttpResponse.BodyHandlers.ofString());
             String url = Jsoup.parse(response.body()).getElementById("ctl00_ContentPlaceHolder_ExtensionIframe").attr("src");
@@ -51,35 +59,25 @@ public class PlanDownloader {
         }
     }
 
-    private DayData refreshCache(Day day) {
-        synchronized (day.lock()) {
-            DayData data = this.data.get(day);
-            if (data != null && hasNotExpired(data)) return data;
+    private Plan getPlan(PlanIdentifier identifier) {
+        long start = System.nanoTime();
+        Plan plan = new Plan(downloadPlan(identifier, Main.conf()));
+        LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
 
-            long start = System.nanoTime();
-            byte[] rawData = getPlan(day, Main.conf());
-            data = new DayData(rawData);
-            LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
-
-            DayData previousPlan = previousData.get(day);
-            if (previousPlan != null && !previousPlan.equals(data)) {
-                planChanged(day, data);
-            }
-            this.data.put(day, data);
-            this.previousData.put(day, data);
-            return data;
+        byte[] oldHash = hashes.get(identifier);
+        byte[] newHash = plan.getHash();
+        if (oldHash != null && !Arrays.equals(oldHash, newHash)) {
+            planChanged(identifier, plan);
         }
+        hashes.put(identifier, newHash);
+        return plan;
     }
 
-    private static boolean hasNotExpired(DayData data) {
-        return data.creationTime() >= System.currentTimeMillis() - Main.conf().planCacheLifetime * 1000L;
+    private static void planChanged(PlanIdentifier identifier, Plan data) {
+        NotificationHandler.handlePlanUpdate(identifier.day(), data);
     }
 
-    private static void planChanged(Day day, DayData data) {
-        NotificationHandler.handlePlanUpdate(day, data);
-    }
-
-    public DayData getData(Day day) {
-        return refreshCache(day);
+    public Plan getData(PlanIdentifier plan) {
+        return cache.get(plan);
     }
 }

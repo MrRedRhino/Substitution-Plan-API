@@ -4,8 +4,9 @@ import io.javalin.http.Context;
 import io.javalin.http.Header;
 import org.pipeman.sp_api.AutoFetch;
 import org.pipeman.sp_api.pdfs.Day;
-import org.pipeman.sp_api.pdfs.DayData;
+import org.pipeman.sp_api.pdfs.Plan;
 import org.pipeman.sp_api.pdfs.PlanDownloader;
+import org.pipeman.sp_api.pdfs.PlanIdentifier;
 
 public class API {
     private static final PlanDownloader DOWNLOADER = new PlanDownloader();
@@ -32,7 +33,7 @@ public class API {
                 return;
             }
 
-            DayData data = DOWNLOADER.getData(day);
+            Plan data = DOWNLOADER.getData(new PlanIdentifier("", day));
             switch (format) {
                 case HTML -> ctx.html(data.html());
                 case PDF -> ctx.result(data.pdf()).header(Header.CONTENT_TYPE, "application/pdf");

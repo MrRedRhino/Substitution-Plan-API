@@ -9,28 +9,33 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.function.Function;
 
-public class DayData {
-    private final long creationTime;
+public class Plan {
+    private static final MessageDigest SHA_DIGEST;
     private final LazyInitializer<String> html;
     private final LazyInitializer<PlanData> data;
     private final LazyInitializer<byte[]> image;
     private final byte[] pdf;
     private final PdfDocument document;
 
-    public DayData(byte[] data) {
-        this.creationTime = System.currentTimeMillis();
+    static {
+        try {
+            SHA_DIGEST = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Plan(byte[] data) {
         this.pdf = data;
         this.document = new PdfDocument(data);
         this.html = new LazyInitializer<>(() -> runWithPdfDocument(this::convertToHtml));
         this.data = new LazyInitializer<>(() -> runWithPdfDocument(PlanData::from));
         this.image = new LazyInitializer<>(() -> runWithPdfDocument(this::convertToImage));
-    }
-
-    public long creationTime() {
-        return creationTime;
     }
 
     public String html() {
@@ -74,8 +79,12 @@ public class DayData {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DayData dayData = (DayData) o;
-        return Arrays.equals(pdf, dayData.pdf);
+        Plan plan = (Plan) o;
+        return Arrays.equals(pdf, plan.pdf);
+    }
+
+    public byte[] getHash() {
+        return SHA_DIGEST.digest(pdf);
     }
 
     @Override

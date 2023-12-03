@@ -31,7 +31,7 @@ public class PlanDownloader {
     private long lastLogin = 0;
     private final Object loginLock = new Object();
 
-    private byte[] downloadPlan(PlanIdentifier plan, Config config) {
+    private byte[] downloadData(PlanIdentifier plan, Config config) {
         try {
             synchronized (loginLock) {
                 if (lastLogin < System.currentTimeMillis() - 600_000) {
@@ -61,7 +61,7 @@ public class PlanDownloader {
 
     private Plan getPlan(PlanIdentifier identifier) {
         long start = System.nanoTime();
-        Plan plan = new Plan(downloadPlan(identifier, Main.conf()));
+        Plan plan = new Plan(downloadData(identifier, Main.conf()));
         LOGGER.info("Took {}ms to download plan", (System.nanoTime() - start) / 1_000_000);
 
         byte[] oldHash = hashes.get(identifier);
@@ -77,7 +77,7 @@ public class PlanDownloader {
         NotificationHandler.handlePlanUpdate(identifier.day(), data);
     }
 
-    public Plan getData(PlanIdentifier plan) {
+    public Plan getCachedPlan(PlanIdentifier plan) {
         return cache.get(plan);
     }
 }

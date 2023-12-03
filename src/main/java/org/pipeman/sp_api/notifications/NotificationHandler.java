@@ -38,6 +38,7 @@ public class NotificationHandler {
 
     public static void sendNotification(Subscriber subscriber, String message) {
         try {
+            LOGGER.info("Sending notification to {}; filter: {}", subscriber.subscription().endpoint, subscriber.filter());
             service.send(new Notification(subscriber.subscription(), message))
                     .thenAccept(s -> deleteSubscriptionIfNecessary(s, subscriber.subscription().endpoint));
         } catch (GeneralSecurityException | IOException | JoseException e) {

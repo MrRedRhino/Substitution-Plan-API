@@ -21,8 +21,8 @@ public class AutoFetch {
             @Override
             public void run() {
                 try {
-                    downloader.getData(new PlanIdentifier("", Day.TODAY));
-                    downloader.getData(new PlanIdentifier("", Day.TOMORROW));
+                    downloader.getCachedPlan(new PlanIdentifier("", Day.TODAY));
+                    downloader.getCachedPlan(new PlanIdentifier("", Day.TOMORROW));
                 } catch (Exception e) {
                     LOGGER.warn("Failed to auto fetch plan", e);
                 }

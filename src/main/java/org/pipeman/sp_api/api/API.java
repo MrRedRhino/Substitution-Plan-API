@@ -33,7 +33,7 @@ public class API {
                 return;
             }
 
-            Plan data = DOWNLOADER.getData(new PlanIdentifier("", day));
+            Plan data = DOWNLOADER.getCachedPlan(new PlanIdentifier("", day));
             switch (format) {
                 case HTML -> ctx.html(data.html());
                 case PDF -> ctx.result(data.pdf()).header(Header.CONTENT_TYPE, "application/pdf");

@@ -51,4 +51,12 @@ public class Subscriber {
     public String filterAsString() {
         return String.join(",", filter);
     }
+
+    @Override
+    public String toString() {
+        return "Subscriber{" +
+               "filter=" + filter +
+               ", endpoint=" + subscription.endpoint +
+               '}';
+    }
 }

@@ -9,31 +9,8 @@
 
 body {
     background-color: var(--background-color);
-    /*darkslategrey*/
     background-image: url("https://pipeman.org/pipe.svg");
     background-size: 30px;
-}
-
-.plan-div {
-    transform: translate(-40px, -20px) scale(0.8);
-    transform-origin: 0 0;
-}
-
-.tomorrow {
-    transform: translate(-250px, -20px) scale(0.8);
-    transform-origin: 0 0
-}
-
-/*THIS IS USED*/
-.plan-div-no-translate {
-    transform: translate(-120px, -40px) scale(0.8);
-    transform-origin: 0 0;
-}
-
-/*THIS IS USED*/
-.tomorrow-no-translate {
-    transform: translate(-120px, -320px) scale(0.8);
-    transform-origin: 0 0
 }
 
 .header {
@@ -46,7 +23,6 @@ body {
     display: flex;
     width: 1000px;
     flex-direction: row;
-    align-items: center
 }
 
 .theme-button {
@@ -234,4 +210,27 @@ input:checked + .slider:before {
 .setting-name {
     font-weight: normal;
     font-size: 18px;
+}
+
+#today {
+    scale: 0.8;
+    translate: -30px -30px;
+    transform-origin: 0 0;
+}
+
+#tomorrow {
+    scale: 0.8;
+    translate: -240px -30px;
+    transform-origin: 0 0
+}
+
+@media screen and (max-width: 1140px) {
+    #sp-div {
+        flex-direction: column;
+    }
+
+    #tomorrow {
+        translate: -30px -330px;
+        transform-origin: 0 0
+    }
 }

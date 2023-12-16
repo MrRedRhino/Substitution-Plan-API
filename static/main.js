@@ -62,7 +62,6 @@ function setLoading(loading) {
 }
 
 function onLoadEnd() {
-    onResize();
     if (todayReady && tomorrowReady) {
         setLoading(false);
         clearTimeout(delay);
@@ -171,28 +170,6 @@ function toggleTable() {
     saveSettings();
     location.reload();
 }
-
-function onResize() {
-    if (window.innerWidth < 1140) {
-        document.getElementById("sp-div").style.flexDirection = "column";
-
-        document.getElementById("today").classList.remove("plan-div");
-        document.getElementById("today").classList.add("plan-div-no-translate");
-        document.getElementById("tomorrow").classList.remove("tomorrow");
-        document.getElementById("tomorrow").classList.add("tomorrow-no-translate");
-    } else {
-        document.getElementById("sp-div").style.flexDirection = "row";
-
-        document.getElementById("today").classList.add("plan-div");
-        document.getElementById("today").classList.remove("plan-div-no-translate");
-        document.getElementById("tomorrow").classList.add("tomorrow");
-        document.getElementById("tomorrow").classList.remove("tomorrow-no-translate");
-    }
-}
-
-window.addEventListener('resize', () => {
-    onResize();
-});
 
 loadSettings();
 setTheme();
